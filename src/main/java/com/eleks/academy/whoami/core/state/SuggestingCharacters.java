@@ -71,7 +71,7 @@ public final class SuggestingCharacters extends AbstractGameState {
 				.values()
 				.stream()
 				.filter(SynchronousPlayer::isSuggest)
-				.count() == this.players.size() && this.getCurrentState() instanceof SuggestingCharacters) {
+				.count() == this.players.size()) {
 			
 			return true;
 		} else 
