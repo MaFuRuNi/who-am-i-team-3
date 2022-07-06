@@ -41,11 +41,21 @@ public class GameController {
 	}
 	
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public GameDetails createGame(@RequestHeader(PLAYER) String player,
-								  @Valid @RequestBody NewGameRequest gameRequest) {
-		
-		return this.gameService.createGame(player, gameRequest);
+//	@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<QuickGame> createGame(@RequestHeader(PLAYER) String player,
+												@Valid @RequestBody NewGameRequest gameRequest) {
+
+		return this.gameService.findQuickGame(player)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
+
+//		return this.gameService.createGame(player, gameRequest);
+	}
+
+	@GetMapping("/all-players-count")
+	@ResponseStatus(HttpStatus.OK)
+	public Integer getAllPlayersCount(@RequestHeader(PLAYER) String player) {
+		return this.gameService.getAllPlayersCount();
 	}
 
 	@GetMapping("/{id}")

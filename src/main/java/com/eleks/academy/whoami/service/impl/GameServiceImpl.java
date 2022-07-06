@@ -72,15 +72,15 @@ public class GameServiceImpl implements GameService {
 	public Optional<PlayerSuggestion> suggestCharacter(String id, String player, CharacterSuggestion suggestion) {
 
 		this.gameRepository.findById(id)
-				.filter(g -> g.isAvailable() == false && g.getState() instanceof SuggestingCharacters)
+				.filter(g -> !g.isAvailable() && g.getState() instanceof SuggestingCharacters)
 				.map(game -> game.findPlayer(player))
 				.ifPresentOrElse(p -> p.ifPresentOrElse(then -> then.suggest(suggestion), 
 											() -> {
-												throw new PlayerNotFoundException("SUGGESTINGCHARACTERS: [" + player + "] in game with id[" + id + "] not found.");
+												throw new PlayerNotFoundException("SUGGESTING-CHARACTERS: [" + player + "] in game with id[" + id + "] not found.");
 											}
 										), 
 						() -> {
-							throw new GameNotFoundException("SUGGESTINGCHARACTERS: Game with id[" + id + "] not found.");
+							throw new GameNotFoundException("SUGGESTING-CHARACTERS: Game with id[" + id + "] not found.");
 						}
 				);
 		
@@ -119,7 +119,7 @@ public class GameServiceImpl implements GameService {
 	@Override
 	public Optional<QuickGame> findQuickGame(String player) {
 		
-		if (!this.gameRepository.findPlayerByHeader(player).isPresent()) {
+		if (this.gameRepository.findPlayerByHeader(player).isEmpty()) {
 			
 			Map<String, SynchronousGame> games = gameRepository.findAvailableQuickGames();
 			
@@ -159,6 +159,11 @@ public class GameServiceImpl implements GameService {
 	@Override
 	public List<AllFields> findAllGamesInfo(String player) {
 		return this.gameRepository.findAllGames(player).map(AllFields::of).toList();
+	}
+
+	@Override
+	public Integer getAllPlayersCount() {
+		return Math.toIntExact(this.gameRepository.getAllPlayers().count());
 	}
 
 }

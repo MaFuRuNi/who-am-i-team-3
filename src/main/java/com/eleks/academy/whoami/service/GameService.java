@@ -42,5 +42,6 @@ public interface GameService {
 	Optional<LeaveModel> leaveGame(String id, String player);
 
 	List<AllFields> findAllGamesInfo(String player);
-	
+
+    Integer getAllPlayersCount();
 }

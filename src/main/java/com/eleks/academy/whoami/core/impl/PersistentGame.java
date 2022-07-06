@@ -34,6 +34,7 @@ public class PersistentGame implements SynchronousGame {
 	public PersistentGame(String hostPlayer, Integer maxPlayers) {
 		this.id = String.format("%d-%d", Instant.now().toEpochMilli(), Double.valueOf(Math.random() * 999).intValue());
 		this.maxPlayers = maxPlayers;
+		this.currentState.add(new WaitingForPlayers(this.maxPlayers));
 	}
 	
 	/*

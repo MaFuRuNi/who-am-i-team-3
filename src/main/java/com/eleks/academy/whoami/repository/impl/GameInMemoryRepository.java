@@ -36,7 +36,12 @@ public class GameInMemoryRepository implements GameRepository {
 	public Stream<SynchronousGame> findAllGames(String player) {
 		return this.games.values().stream();
 	}
-	
+
+	@Override
+	public Stream<String> getAllPlayers() {
+		return this.players.values().stream();
+	}
+
 	@Override
 	public SynchronousGame save(SynchronousGame game) {
 		this.games.put(game.getId(), game);
