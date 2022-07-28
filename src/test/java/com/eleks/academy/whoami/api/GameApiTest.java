@@ -1,33 +1,24 @@
 package com.eleks.academy.whoami.api;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Assertions.assertThat;
-import static java.util.Collections.singletonList;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.eleks.academy.whoami.handler.ApiClient;
+import com.eleks.academy.whoami.model.*;
+import com.eleks.academy.whoami.model.request.NewGameSize;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpStatus;
 
-import com.eleks.academy.whoami.handler.ApiClient;
-import com.eleks.academy.whoami.model.CharacterSuggestion;
-import com.eleks.academy.whoami.model.GameDetails;
-import com.eleks.academy.whoami.model.GameLight;
-import com.eleks.academy.whoami.model.Message;
-import com.eleks.academy.whoami.model.NewGameRequest;
-import com.eleks.academy.whoami.model.PlayerState;
-import com.eleks.academy.whoami.model.PlayerWithState;
-import com.eleks.academy.whoami.model.QuestionAnswer;
-import com.eleks.academy.whoami.model.SynchronousPlayer;
-import com.eleks.academy.whoami.model.TurnDetails;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
     class GameApiTest {
 
@@ -57,7 +48,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
                 GameApi gameApi = new GameApi(new ApiClient());
 
-                GameLight gameLight = new GameLight();
+                GameShortInfo gameLight = new GameShortInfo();
                 gameLight.setId("1234-UUID");
                 gameLight.setStatus("WaitingForPlayers");
                 gameLight.setPlayersInGame("3/4");
@@ -85,8 +76,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
                 GameApi gameApi = new GameApi(new ApiClient());
 
-                NewGameRequest newGameRequest = new NewGameRequest();
-                newGameRequest.maxPlayers(4);
+                com.eleks.academy.whoami.model.NewGameSize newGameSize = new com.eleks.academy.whoami.model.NewGameSize();
+                newGameSize.setMaxPlayers(4);
 
                 SynchronousPlayer synchronousPlayer = new SynchronousPlayer();
                 synchronousPlayer.name("Example");
@@ -100,10 +91,9 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
                 GameDetails gameDetails = new GameDetails();
                 gameDetails.id("1234-Uid");
                 gameDetails.status("WaitingForPlayers");
-                gameDetails.currentTurn("1");
                 gameDetails.players(singletonList(playerWithState));
 
-                assertThat(gameApi.createGame(newGameRequest, "Example")).isEqualTo(gameDetails);
+                assertThat(gameApi.createGame(newGameSize, "Example")).isEqualTo(gameDetails);
             }
         }
 
@@ -112,8 +102,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
             try (InputStream in = getClass().getResourceAsStream("/models/game/get-game-by-id-response.json")) {
                 String expectedResponse = new String(in.readAllBytes());
                 wireMockServer
-                        .stubFor(WireMock.get(WireMock.urlMatching("/api/v1/games/1234-Uid")).withHeader("X-Player",
-                                        equalTo("Example"))
+                        .stubFor(WireMock.get(WireMock.urlMatching("/api/v1/games/1234-Uid"))
+                                .withHeader("X-Player", equalTo("Example"))
                                 .willReturn(WireMock.aResponse().withBody(expectedResponse).withStatus(HttpStatus.OK.value())
                                         .withHeader("Content-Type", "application/json")));
 
@@ -131,7 +121,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
                 GameDetails gameDetails = new GameDetails();
                 gameDetails.id("1234-Uid");
                 gameDetails.status("WaitingForPlayers");
-                gameDetails.currentTurn("1");
                 gameDetails.players(singletonList(playerWithState));
 
                 assertThat(gameApi.findById("1234-Uid", "Example"))
@@ -165,7 +154,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
                 GameDetails gameDetails = new GameDetails();
                 gameDetails.id("1234-Uid");
                 gameDetails.status("WaitingForPlayers");
-                gameDetails.currentTurn("1");
                 gameDetails.players(singletonList(playerWithState));
 
                 assertThat(gameApi.startGame("1234-Uid", "Example")).isEqualTo(gameDetails);
@@ -300,7 +288,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
                 Message message = new Message();
                 message.message("Question");
 
-                gameApi.answerQuestion(message, "1234-Uid", "Example");
+                gameApi.answerQuestion("1234-Uid", "Example");
             }
         }
 

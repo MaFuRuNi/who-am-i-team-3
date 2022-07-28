@@ -1,7 +1,7 @@
 package com.eleks.academy.whoami.model.request;
 
-public enum QuestionAnswer {
+public enum GuessAnswer {
 
-	YES, NO, NOT_SURE,
+    YES, NO
 
 }

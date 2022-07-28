@@ -11,9 +11,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewGameRequest {
+public class NewGameSize {
 
-	//TODO: Retrieve from config
 	@Min(2)
 	@Max(6)
 	@NotNull(message = "maxPlayers must not be null")

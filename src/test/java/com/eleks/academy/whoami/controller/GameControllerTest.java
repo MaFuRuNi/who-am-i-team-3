@@ -1,18 +1,10 @@
 package com.eleks.academy.whoami.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Optional;
-
+import com.eleks.academy.whoami.configuration.GameControllerAdvice;
+import com.eleks.academy.whoami.model.request.NewGameSize;
+import com.eleks.academy.whoami.model.response.GameDetails;
+import com.eleks.academy.whoami.model.response.LeaveDetails;
+import com.eleks.academy.whoami.service.impl.GameServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,21 +15,19 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.eleks.academy.whoami.configuration.GameControllerAdvice;
-import com.eleks.academy.whoami.model.request.CharacterSuggestion;
-import com.eleks.academy.whoami.model.request.NewGameRequest;
-import com.eleks.academy.whoami.model.response.GameDetails;
-import com.eleks.academy.whoami.model.response.LeaveModel;
-import com.eleks.academy.whoami.model.response.PlayerSuggestion;
-import com.eleks.academy.whoami.model.response.QuickGame;
-import com.eleks.academy.whoami.service.impl.GameServiceImpl;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class GameControllerTest {
 
 	private final GameServiceImpl gameService = mock(GameServiceImpl.class);
 	private final GameController gameController = new GameController(gameService);
-	private final NewGameRequest gameRequest = new NewGameRequest();
+	private final NewGameSize gameRequest = new NewGameSize();
 	private MockMvc mockMvc;
 
 	@BeforeEach
@@ -61,7 +51,7 @@ class GameControllerTest {
 		GameDetails gameDetails = new GameDetails();
 		gameDetails.setId("12613126");
 		gameDetails.setStatus("WaitingForPlayers");
-		when(gameService.createGame(eq("player"), any(NewGameRequest.class))).thenReturn(gameDetails);
+		when(gameService.createGame(eq("player"), any(NewGameSize.class))).thenReturn(Optional.of(gameDetails));
 		this.mockMvc.perform(
 						MockMvcRequestBuilders.post("/games")
 								.header("X-Player", "player")
@@ -94,10 +84,7 @@ class GameControllerTest {
 	void suggestCharacter() throws Exception {
 		
 		final String header = "Test-Player";
-		Optional<PlayerSuggestion> response = Optional.of(new PlayerSuggestion(header, "Usop", "char"));
-		
-		when(gameService.suggestCharacter(eq("1234"), eq(header), any(CharacterSuggestion.class))).thenReturn(response);
-		
+
 		this.mockMvc.perform(
 						MockMvcRequestBuilders.post("/games/1234/characters")
 								.header("X-Player", header)
@@ -107,57 +94,14 @@ class GameControllerTest {
 										    "nickname": " Usop",
 										    "character": " char"
 										}"""))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("username").value(header))
-				.andExpect(jsonPath("nickname").value("Usop"))
-				.andExpect(jsonPath("suggestion").value("char"));
-
-		verify(gameService, times(1)).suggestCharacter(eq("1234"), eq("Test-Player"), any(CharacterSuggestion.class));
-	}
-	
-	@Test
-	void findQuickGameSuccessful() throws Exception {
-		String playerId = "Test-Player";
-
-		Optional<QuickGame> availableGame = Optional.of(new QuickGame("1111", "WaitingForPlayers", true, "1", null));
-		
-		when(gameService.findQuickGame(playerId)).thenReturn(availableGame);
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/games/quick")
-				.header("X-Player", playerId)
-				.contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isOk());
-		
-		assertThat(availableGame).isNotEmpty().isNotNull();
-		
-		verify(gameService, times(1)).findQuickGame(eq(playerId));
-		
-	}
-	
-	@Test
-	void findQuickGameFailed_WithBadRequest() throws Exception {
-		String playerId = "Test-Player";
-
-		Optional<QuickGame> availableGame = Optional.empty();
-		
-		when(gameService.findQuickGame(playerId)).thenReturn(availableGame);
-		
-		mockMvc.perform(MockMvcRequestBuilders.post("/games/quick")
-				.header("X-Player", playerId)
-				.contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isNotFound());
-		
-		assertThat(availableGame).isEmpty().isNotNull();
-		
-		verify(gameService, times(1)).findQuickGame(eq(playerId));
-		
+				.andExpect(status().isOk());
 	}
 	
 	@Test
 	void leaveGameTest() throws Exception {
 		final String id = "686863";
 		
-		Optional<LeaveModel> response = Optional.of(new LeaveModel("Test-Player", id));
+		Optional<LeaveDetails> response = Optional.of(new LeaveDetails("Test-Player", id));
 		
 		when(gameService.leaveGame(id, "Test-Player")).thenReturn(response);
 		

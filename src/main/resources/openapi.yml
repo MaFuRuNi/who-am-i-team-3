@@ -4,20 +4,22 @@ info:
   title: Who am I?
   description: Rest Api description
 servers:
-  - url: http://localhost:8090/api/v1	  
+  - url: http://localhost:8090/api/v1
+  - url: https://who-am-i-t3f.herokuapp.com/api/v1
 paths:
   /games:
     get:
       tags:
         - game
-      description: Returns a list available games
+      description: Returns a list of available games with short info.
       operationId: findAvailableGames
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
-            type: string               
+            type: string
       responses:
         '200':
           description: Returns a list of available games
@@ -26,7 +28,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GameLight'
+                  $ref: '#/components/schemas/GameShortInfo'
     post:
       tags:
         - game
@@ -35,16 +37,17 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
-            type: string  
+            type: string
       requestBody:
         description: Model for game creation
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewGameRequest'
+              $ref: '#/components/schemas/NewGameSize'
       responses:
         '201':
           description: Returns details about created game
@@ -57,11 +60,12 @@ paths:
     get:
       tags:
         - game
-      description: Returns data about game by game id
+      description: Returns details about game by game id and player id
       operationId: findById
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -79,6 +83,12 @@ paths:
               schema:
                 type: object
                 $ref: '#/components/schemas/GameDetails'
+        '404':
+          description: Returns details if game not found
+          content:
+            application/json:
+              schema:
+                type: string
     post:
       tags:
         - game
@@ -87,6 +97,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -103,7 +114,7 @@ paths:
             application/json:
               schema:
                 type: object
-                $ref: '#/components/schemas/GameDetails'              
+                $ref: '#/components/schemas/GameDetails'
   /games/{id}/players:
     post:
       tags:
@@ -113,6 +124,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -130,6 +142,12 @@ paths:
               schema:
                 type: object
                 $ref: '#/components/schemas/SynchronousPlayer'
+        '403':
+          description: Return details if player not enrolled
+          content:
+            application/json:
+              schema:
+                type: string
   /games/{id}/characters:
     post:
       tags:
@@ -139,6 +157,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -154,10 +173,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CharacterSuggestion'      
+              $ref: '#/components/schemas/CharacterSuggestion'
       responses:
         '200':
-          description: No response data in case succesful request
+          description: No response data in case successful request
+        '404':
+          description: Provided player id or game id not exist or incorrect
+          content:
+            application/json:
+              schema:
+                type: string
   /games/{id}/turn:
     get:
       tags:
@@ -167,6 +192,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -184,7 +210,13 @@ paths:
               schema:
                 type: object
                 $ref: '#/components/schemas/TurnDetails'
-  /games/{id}/questions:
+        '404':
+          description: Provided player id or game id not exist or incorrect
+          content:
+            application/json:
+              schema:
+                type: string
+  /games/{id}/question:
     post:
       tags:
         - game
@@ -193,6 +225,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -208,10 +241,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Message'      
+              $ref: '#/components/schemas/Message'
       responses:
         '200':
-          description: No response data in case succesful request
+          description: No response data in case successful request
+        '404':
+          description: Provided player id or game id are incorrect or player already submit question
+          content:
+            application/json:
+              schema:
+                type: string
   /games/{id}/guess:
     post:
       tags:
@@ -221,6 +260,7 @@ paths:
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -236,19 +276,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Message'      
+              $ref: '#/components/schemas/Message'
       responses:
         '200':
-          description: No response data in case succesful request
-  /games/{id}/answer:
+          description: No response data in case successful request
+        '404':
+          description: Provided player id or game id are incorrect or player already submit guess
+          content:
+            application/json:
+              schema:
+                type: string
+  /games/{id}/question/answer:
     post:
       tags:
         - game
-      description: Give answer
+      description: Give question answer
       operationId: answerQuestion
       parameters:
         - in: header
           name: X-Player
+          description: Player id
           required: true
           schema:
             type: string
@@ -258,30 +305,150 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        description: Message model
+      requestParam:
+        description: Question answer model
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Message'      
+              $ref: '#/components/schemas/QuestionAnswer'
       responses:
         '200':
-          description: No response data in case succesful request                                                                           
-    
+          description: No response data in case successful request
+        '404':
+          description: Provided player id or game id are incorrect or player already submit answer
+          content:
+            application/json:
+              schema:
+                type: string
+  /games/{id}/guess/answer:
+    post:
+      tags:
+        - game
+      description: Give guess answer
+      operationId: answerGuess
+      parameters:
+        - in: header
+          name: X-Player
+          description: Player id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          description: Game id
+          required: true
+          schema:
+            type: string
+      requestParam:
+        description: Guess answer model
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuessAnswer'
+      responses:
+        '200':
+          description: No response data in case successful request
+        '404':
+          description: Provided player id or game id are incorrect or player already submit answer
+          content:
+            application/json:
+              schema:
+                type: string
+  /games/{id}/leave:
+    delete:
+      tags:
+        - game
+      description: Returns data about player that leave game
+      operationId: leaveGame
+      parameters:
+        - in: header
+          name: X-Player
+          description: Player id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          description: Game id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns details about player that leave game
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/LeaveDetails'
+        '404':
+          description: Provided player id or game id incorrect
+          content:
+            application/json:
+              schema:
+                type: string
+  /games/all-players-count:
+    get:
+      tags:
+        - game
+      description: Returns number of player online
+      operationId: getAllPlayersCount
+      parameters:
+        - in: header
+          name: X-Player
+          description: Player id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns number of player online
+          content:
+            application/json:
+              schema:
+                type: integer
+  /games/{id}/history:
+    get:
+      tags:
+        - game
+      description: Returns data about current game chat history
+      operationId: getGameHistory
+      parameters:
+        - in: path
+          name: id
+          description: Game id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns data about current game chat history
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/GameHistory'
+        '404':
+          description: Provided game id was incorrect
+          content:
+            application/json:
+              schema:
+                type: string
 #  ----- Components  ----------------------------------------           
-components:                 
+components:
   schemas:
-    GameLight:
+    GameShortInfo:
       type: object
       properties:
         id:
           type: string
         status:
-            type: string
+          type: string
         playersInGame:
-            type: string
-    NewGameRequest:
+          type: string
+    NewGameSize:
       type: object
       properties:
         maxPlayers:
@@ -292,8 +459,6 @@ components:
         id:
           type: string
         status:
-          type: string
-        currentTurn:
           type: string
         players:
           type: array
@@ -310,7 +475,7 @@ components:
           $ref: '#/components/schemas/QuestionAnswer'
         state:
           type: object
-          $ref: '#/components/schemas/PlayerState'            
+          $ref: '#/components/schemas/PlayerState'
     SynchronousPlayer:
       type: object
       properties:
@@ -318,9 +483,13 @@ components:
           type: string
         character:
           type: string
+        id:
+          type: string
     CharacterSuggestion:
       type: object
       properties:
+        name:
+          type: string
         character:
           type: string
     TurnDetails:
@@ -337,19 +506,64 @@ components:
       type: object
       properties:
         message:
-          type: string                        
-#  ---- Enums section  ----------------------------------------            
+          type: string
+    LeaveDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    GameHistory:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionsHistory'
+        currentQuestion:
+          type: object
+          $ref: '#/components/schemas/QuestionsHistory'
+    QuestionsHistory:
+      type: object
+      properties:
+        player:
+          type: string
+        type:
+          type: string
+        question:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswersHistory'
+    AnswersHistory:
+      type: object
+      properties:
+        player:
+          type: string
+        answer:
+          type: string
+    #  ---- Enums section  ----------------------------------------
     QuestionAnswer:
       type: string
       enum:
         - "YES"
         - "NO"
-        - NOT_SURE     
+        - "NOT_SURE"
+    GuessAnswer:
+      type: string
+      enum:
+        - "YES"
+        - "NO"
     PlayerState:
       type: string
       enum:
-        - NOT_READY
-        - READY
-        - ASKING
-        - ANSWERING
-        - FINISHED              
+        - "NOT_READY"
+        - "READY"
+        - "ASKING"
+        - "ASKED"
+        - "ANSWERING"
+        - "ANSWERED"
+        - "FINISHED"
+        - "LOST"

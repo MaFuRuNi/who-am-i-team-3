@@ -1,9 +1,6 @@
 package com.eleks.academy.whoami.model.response;
 
-import java.util.List;
-
 import com.eleks.academy.whoami.core.SynchronousGame;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,25 +10,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuickGame {
-	
+public class GameShortInfo {
+
 	private String id;
-	
+
 	private String status;
 	
-	private boolean accessibility;
-	
 	private String playersInGame;
-	
-	private List<BasePlayerModel> players;
-	
-	public static QuickGame of(SynchronousGame game) {
-		return QuickGame.builder()
+
+	public static GameShortInfo of(SynchronousGame game) {
+		return GameShortInfo.builder()
 				.id(game.getId())
-				.status(game.getStatus())
-				.accessibility(game.isAvailable())
-				.playersInGame(game.getPlayersInGame())
-				.players(game.getPlayersList())
+				.status(game.getState().getClass().getName())
+				.playersInGame(String.valueOf(game.getPlayersList().size()))
 				.build();
 	}
 

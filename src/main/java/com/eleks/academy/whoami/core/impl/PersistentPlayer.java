@@ -1,89 +1,45 @@
 package com.eleks.academy.whoami.core.impl;
 
-import java.util.Objects;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.eleks.academy.whoami.core.SynchronousPlayer;
-import com.eleks.academy.whoami.model.request.CharacterSuggestion;
+
+import java.util.Objects;
 
 public class PersistentPlayer implements SynchronousPlayer {
 
-	private final String username;
-	
-	private String nickname;
-	
-	private String characterSuggestion;
-	
-	private boolean isSuggested = Boolean.FALSE;
-	
-	private String gameCharacter;
-	
-	private boolean isCharacterAssigned = Boolean.FALSE;
-	
-	public PersistentPlayer(String username, String nickname) {
-		this.username = Objects.requireNonNull(username);
-		this.nickname = Objects.requireNonNull(nickname);
-	}
-	
-	@Override
-	public boolean isSuggest() {
-		return isSuggested;
-	}
-	
-	@Override
-	public boolean isCharacterAssigned() {
-		return isCharacterAssigned;
-	}
-	
-	private void setNickName(String nickname) {
-		this.nickname = nickname;
+	private String name;
+
+	private String character;
+
+	private final String id;
+
+	public PersistentPlayer(String id, String name) {
+		this.id = Objects.requireNonNull(id);
+		this.name = Objects.requireNonNull(name);
 	}
 
-	private void setCharacter(String character) {
-		this.characterSuggestion = character;
-	}
-	
 	@Override
-	public String getUserName() {
-		return this.username;
+	public void setName(String name) {
+		this.name = name;
 	}
-	
+
 	@Override
-	public String getNickName() {
-		return this.nickname;
+	public void setCharacter(String character) {
+		this.character = character;
 	}
-	
+
 	@Override
-	public String getCharacterSuggestion() {
-		return this.characterSuggestion;
+	public String getName() {
+		return this.name;
 	}
-	
+
 	@Override
-	public String getGameCharacter() {
-		return gameCharacter;
+	public String getCharacter() {
+		return character;
 	}
-	
+
 	@Override
-	public void setGameCharacter(String gameCharacter) {
-		if (this.isCharacterAssigned == false) {
-			this.isCharacterAssigned = Boolean.TRUE;
-			this.gameCharacter = gameCharacter;
-		}
+	public String getId() {
+		return id;
 	}
-	
-	@Override
-	public void suggest(CharacterSuggestion suggestion) {
-		if (this.isSuggested == false) {
-			this.isSuggested = Boolean.TRUE;
-			setNickName(suggestion.getNickname());
-			setCharacter(suggestion.getCharacter());
-		}
-		else {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Suggestion has already been submitted!");
-		}
-		
-	}
-	
+
 }
