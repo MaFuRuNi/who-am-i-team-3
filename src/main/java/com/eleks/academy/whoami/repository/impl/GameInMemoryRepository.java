@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.eleks.academy.whoami.core.SynchronousPlayer;
+import com.eleks.academy.whoami.core.state.impl.WaitingForPlayers;
 import org.springframework.stereotype.Repository;
 
 import com.eleks.academy.whoami.core.SynchronousGame;
@@ -17,59 +19,65 @@ import com.eleks.academy.whoami.repository.GameRepository;
 public class GameInMemoryRepository implements GameRepository {
 
 	private final Map<String, SynchronousGame> games = new ConcurrentHashMap<>();
-	
-	private final Map<String, String> players = new ConcurrentHashMap<>();
-	
+
 	@Override
 	public Stream<SynchronousGame> findAllAvailable(String player) {
-		Predicate<SynchronousGame> freeToJoin = SynchronousGame::isAvailable;
-
-//		Predicate<SynchronousGame> playersGame = game ->
-//				game.findPlayer(player).isPresent();
-
-		return this.games.values()
+		Predicate<SynchronousGame> freeToJoin = game -> game.getState() instanceof WaitingForPlayers;
+		return this.games
+				.values()
 				.stream()
 				.filter(freeToJoin);
 
 	}
 	
 	public Stream<SynchronousGame> findAllGames(String player) {
-		return this.games.values().stream();
+		return this.games
+				.values()
+				.stream();
 	}
-	
+
+	@Override
+	public Integer getAllPlayers() {
+		return this.games
+				.values()
+				.stream()
+				.map(game -> game.getPlayersList().size())
+				.reduce(Integer::sum)
+				.orElse(0);
+	}
+
+	@Override
+	public void disbandGame(String id) {
+		this.games.remove(id);
+	}
+
 	@Override
 	public SynchronousGame save(SynchronousGame game) {
 		this.games.put(game.getId(), game);
-
 		return game;
 	}
 
 	@Override
-	public Optional<SynchronousGame> findById(String id) {
+	public Optional<SynchronousGame> findGameById(String id) {
 		return Optional.ofNullable(this.games.get(id));
 	}
 	
 	@Override
-	public Optional<String> findPlayerByHeader(String player) {
-		return Optional.ofNullable(this.players.get(player));
+	public Optional<SynchronousPlayer> findPlayerById(String player) {
+		return this.games
+				.values()
+				.stream()
+				.map(game -> game.findPlayer(player))
+				.findFirst()
+				.orElse(Optional.empty());
 	}
 
 	@Override
-	public void savePlayer(String player) {
-		this.players.put(player, player);
-	}
-	
-	@Override
-	public void deletePlayerByHeader(String player) {
-		this.players.remove(player);
-	}
-	
-	@Override
 	public Map<String, SynchronousGame> findAvailableQuickGames() {
-		return filterByValue(games, availableStatus -> availableStatus.isAvailable() == true);
+		return filterByValue(games, game -> game.getState() instanceof WaitingForPlayers);
 	}
 	
-	private static <K, V> Map<K, V> filterByValue(Map<K, V> map, Predicate<V> predicate) {
+	private <K, V> Map<K, V> filterByValue(Map<K, V> map, Predicate<V> predicate) {
 	    return map.entrySet()
 	            .stream()
 	            .filter(entry -> predicate.test(entry.getValue()))

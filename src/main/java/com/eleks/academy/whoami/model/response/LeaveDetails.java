@@ -11,16 +11,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveModel {
-	
-	private String username;
-	
-	private String gameId;
-	
-	public static LeaveModel of(SynchronousPlayer player, String gameId) {
-		return LeaveModel.builder()
-				.username(player.getUserName())
-				.gameId(gameId)
+public class LeaveDetails {
+
+	private String id;
+
+	private String name;
+
+	public static LeaveDetails of(SynchronousPlayer player, String gameId) {
+		return LeaveDetails.builder()
+				.id(gameId)
+				.name(player.getName())
 				.build();
 	}
 }

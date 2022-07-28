@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,13 +19,13 @@ public class GameDetails {
 
 	private String status;
 
-	private String playersInGame;
+	private List<PlayerWithState> players;
 
 	public static GameDetails of(SynchronousGame game) {
 		return GameDetails.builder()
 				.id(game.getId())
-				.status(game.getStatus())
-				.playersInGame(game.getPlayersInGame())
+				.status(game.getState().getClass().getName())
+				.players(game.getPlayersList())
 				.build();
 	}
 

@@ -1,14 +1,21 @@
-package com.eleks.academy.whoami.core.state;
+package com.eleks.academy.whoami.core.state.impl;
 
 import com.eleks.academy.whoami.core.SynchronousPlayer;
+import com.eleks.academy.whoami.core.state.GameState;
+import com.eleks.academy.whoami.model.response.PlayerWithState;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public final class GameFinished extends AbstractGameState {
+public final class GameFinished implements GameState {
+
+	private final int playersInGame;
+
+	private final int maxPlayers;
 
 	public GameFinished(int playersInGame, int maxPlayers) {
-		super(playersInGame, maxPlayers);
+		this.playersInGame = playersInGame;
+		this.maxPlayers = maxPlayers;
 	}
 
 	@Override
@@ -34,14 +41,15 @@ public final class GameFinished extends AbstractGameState {
 	}
 
 	@Override
-	public Optional<SynchronousPlayer> remove(String player) {
+	public Optional<SynchronousPlayer> leave(String player) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Stream<SynchronousPlayer> getPlayersList() {
+	public Stream<PlayerWithState> getPlayersList() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

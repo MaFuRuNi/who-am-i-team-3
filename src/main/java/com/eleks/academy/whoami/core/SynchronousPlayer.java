@@ -1,23 +1,15 @@
 package com.eleks.academy.whoami.core;
 
-import com.eleks.academy.whoami.model.request.CharacterSuggestion;
-
 public interface SynchronousPlayer {
 
-	String getUserName();
+	void setName(String name);
 
-	String getCharacterSuggestion();
-	
-	void suggest(CharacterSuggestion suggestion);
+	void setCharacter(String character);
 
-	boolean isSuggest();
+	String getName();
 
-	String getNickName();
+	String getCharacter();
 
-	String getGameCharacter();
-
-	void setGameCharacter(String gameCharacter);
-
-	boolean isCharacterAssigned();
+	String getId();
 
 }
